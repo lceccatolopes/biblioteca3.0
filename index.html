@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <meta name="description" content="Codex de personagens e histórias - versão 3.0" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icone-192.png" />
+  <link rel="apple-touch-icon" href="icone-152.png" />
+  <link rel="stylesheet" href="documento/estilo.css" />
+  <title>Codex 3.0</title>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
+    }
+  </script>
+</body>
+</html>
