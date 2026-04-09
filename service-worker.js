@@ -3,10 +3,8 @@ const ASSETS = [
   "./",
   "./index.html",
   "./app.js",
-  "./manifest.json",
-  "./icone-192.png",
-  "./icone-152.png",
-  "./documento/estilo.css"
+  "./estilo.css",
+  "./manifest.json"
 ];
 
 self.addEventListener("install", (event) => {
@@ -26,12 +24,13 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
   event.respondWith(
-    caches.match(req).then((cached) => cached || fetch(req).then((res) => {
-      const copy = res.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-      return res;
-    }).catch(() => cached))
+    caches.match(event.request).then((cached) => {
+      return cached || fetch(event.request).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return res;
+      });
+    }).catch(() => caches.match("./index.html"))
   );
 });
