@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "codex_data";
+  const STORAGE_KEY = "codex_data_v3";
 
   const state = {
     characters: [],
@@ -21,7 +21,7 @@
   function createCharacter() {
     const c = {
       id: Date.now().toString(),
-      name: "Novo personagem",
+      name: "Novo Personagem",
       notes: ""
     };
     state.characters.unshift(c);
@@ -42,90 +42,83 @@
     if (!c) return;
     Object.assign(c, data);
     save();
-  }
-
-  function getSelected() {
-    return state.characters.find(c => c.id === state.selectedId);
+    // Renderiza apenas a lista para atualizar o nome no menu lateral
+    renderLeftList();
   }
 
   function render() {
     const app = document.getElementById("app");
-
     app.innerHTML = `
       <div class="container">
         <div class="topbar">
-          <h2>Codex</h2>
+          <h2>Codex 3.0</h2>
           <button class="btn primary" id="newBtn">+ Novo</button>
         </div>
-
         <div class="grid">
-          <div id="left"></div>
+          <div id="left">
+            <input id="search" placeholder="Buscar..." value="${state.search}" />
+            <div id="list-container"></div>
+          </div>
           <div id="right"></div>
         </div>
       </div>
     `;
 
-    renderLeft();
-    renderRight();
-
     document.getElementById("newBtn").onclick = createCharacter;
-  }
-
-  function renderLeft() {
-    const left = document.getElementById("left");
-
-    const list = state.characters
-      .filter(c => c.name.toLowerCase().includes(state.search.toLowerCase()))
-      .map(c => `
-        <div class="item" data-id="${c.id}">
-          ${c.name}
-        </div>
-      `).join("");
-
-    left.innerHTML = `
-      <input id="search" placeholder="Buscar..." />
-      ${list}
-    `;
-
     document.getElementById("search").oninput = (e) => {
       state.search = e.target.value;
-      renderLeft();
+      renderLeftList();
     };
 
-    document.querySelectorAll(".item").forEach(el => {
+    renderLeftList();
+    renderRight();
+  }
+
+  function renderLeftList() {
+    const container = document.getElementById("list-container");
+    const filtered = state.characters.filter(c => 
+      c.name.toLowerCase().includes(state.search.toLowerCase())
+    );
+
+    container.innerHTML = filtered.map(c => `
+      <div class="item ${c.id === state.selectedId ? 'active' : ''}" data-id="${c.id}">
+        ${c.name || "Sem nome"}
+      </div>
+    `).join("");
+
+    container.querySelectorAll(".item").forEach(el => {
       el.onclick = () => {
         state.selectedId = el.dataset.id;
-        renderRight();
+        render(); 
       };
     });
   }
 
   function renderRight() {
     const right = document.getElementById("right");
-    const c = getSelected();
+    const c = state.characters.find(char => char.id === state.selectedId);
 
     if (!c) {
-      right.innerHTML = `<div class="empty">Selecione um personagem</div>`;
+      right.innerHTML = `<div class="empty">Selecione ou crie um personagem</div>`;
       return;
     }
 
     right.innerHTML = `
-      <input id="name" value="${c.name}" />
-      <textarea id="notes">${c.notes}</textarea>
-      <button class="btn danger" id="deleteBtn">Apagar</button>
+      <input id="edit-name" value="${c.name}" placeholder="Nome do personagem..." />
+      <textarea id="edit-notes" placeholder="História, habilidades...">${c.notes}</textarea>
+      <button class="btn danger" id="deleteBtn">Apagar Personagem</button>
     `;
 
-    document.getElementById("name").oninput = (e) => {
+    document.getElementById("edit-name").oninput = (e) => {
       updateCharacter(c.id, { name: e.target.value });
-      renderLeft();
     };
 
-    document.getElementById("notes").oninput = (e) => {
+    document.getElementById("edit-notes").oninput = (e) => {
       updateCharacter(c.id, { notes: e.target.value });
     };
 
     document.getElementById("deleteBtn").onclick = () => {
-      if (confirm("Tem certeza?")) {
+      if (confirm("Deseja mesmo apagar este personagem?")) {
         deleteCharacter(c.id);
       }
     };
@@ -133,5 +126,4 @@
 
   load();
   render();
-
 })();
